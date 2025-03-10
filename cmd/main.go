@@ -9,20 +9,23 @@ import (
 	"time"
 
 	api "github.com/adityadafe/kc-backend-assgn/internal/api/handlers"
+	"github.com/adityadafe/kc-backend-assgn/internal/storage"
 )
 
 var bindAddress = ":9090"
 
 func main() {
 
+	//for now just print logs in fd 1
 	logger := log.New(os.Stdout, "image-api ", log.LstdFlags)
 
 	sm := http.NewServeMux()
+	store := storage.CreateNewStore()
 
-	getJobInfoHandler := api.NewGetJobInfoHandler(logger)
-	SubmitJobHandler := api.NewSubmitJobHandler(logger)
+	getJobInfoHandler := api.NewGetJobInfoHandler(logger, &store)
+	submitJobHandler := api.NewSubmitJobHandler(logger, &store)
 
-	sm.Handle("POST /api/submit", SubmitJobHandler)
+	sm.Handle("POST /api/submit", submitJobHandler)
 	sm.Handle("GET /api/status", getJobInfoHandler)
 
 	server := &http.Server{
