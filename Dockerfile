@@ -17,5 +17,8 @@ RUN --mount=type=cache,target=/go/pkg \
     go build -ldflags="-w -s" -o /out/app ./cmd/main.go
 
 FROM gcr.io/distroless/static:latest
+
 COPY --from=build /out/app /app
+COPY store_manager.csv /store_manager.csv
+
 ENTRYPOINT ["/app"]
