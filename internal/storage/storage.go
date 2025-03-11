@@ -1,7 +1,12 @@
 package storage
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/adityadafe/kc-backend-assgn/internal/utils"
 )
@@ -27,6 +32,7 @@ type Storage interface {
 	AddNewJob(string)
 	UpdateJob(string, string, string, string)
 	GetJobStatus(string) (*JobInfo, error)
+	CheckStore(string) error
 }
 
 func CreateNewStore() Store {
@@ -78,4 +84,53 @@ func (s *Store) GetJobStatus(jobId string) (*JobInfo, error) {
 		return nil, fmt.Errorf("err: %s", "job_id_does_not_exist")
 	}
 	return jobInfo, nil
+}
+
+func (s *Store) CheckStore(storeID string) error {
+	const csvPath = "./store_manager.csv"
+
+	absPath, err := filepath.Abs(csvPath)
+	if err != nil {
+		return fmt.Errorf("failed to resolve absolute path for %q: %w", csvPath, err)
+	}
+
+	if _, err := os.Stat(absPath); err != nil {
+		if os.IsNotExist(err) {
+			return fmt.Errorf("store data file not found at %q", absPath)
+		}
+		return fmt.Errorf("error accessing file %q: %w", absPath, err)
+	}
+
+	file, err := os.Open(absPath)
+	if err != nil {
+		return fmt.Errorf("failed to open store data file %q: %w", absPath, err)
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+
+	if _, err := reader.Read(); err != nil {
+		return fmt.Errorf("invalid CSV header in %q: %w", absPath, err)
+	}
+
+	for recordNumber := 1; ; recordNumber++ {
+		record, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("error reading record #%d in %q: %w",
+				recordNumber, absPath, err)
+		}
+
+		if len(record) < 3 {
+			continue
+		}
+
+		if strings.TrimSpace(record[2]) == storeID {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("store ID %q not found in %q", storeID, absPath)
 }

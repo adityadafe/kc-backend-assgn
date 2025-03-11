@@ -22,8 +22,7 @@ func NewSubmitJobHandler(l *log.Logger, db storage.Storage) *SubmitJobHandler {
 }
 
 func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.l.Println("recvd submit job handler")
-
+	s.l.Println("Recvd a job")
 	newJobPayload := new(models.JobPayload)
 
 	err := json.NewDecoder(r.Body).Decode(newJobPayload)
@@ -34,11 +33,17 @@ func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//TODO: do sanitaion Condition: If fields are missing OR count != len(visits)
 	if newJobPayload.Count != len(newJobPayload.Visits) {
 		s.l.Println("count != len(visits)")
 		utils.WriteJson(w, http.StatusBadRequest, `{error:"Bad request"}`)
 		return
+	}
+
+	for _, eachJob := range newJobPayload.Visits {
+		if len(eachJob.ImageUrls) < 1 || eachJob.StoreId == "" || eachJob.VisitTime == "" {
+			utils.WriteJson(w, http.StatusBadRequest, `{error:"Bad request"}`)
+			return
+		}
 	}
 
 	newSubmitJobResponseBody := new(models.SubmitJobResponseBody)
@@ -46,7 +51,7 @@ func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	s.db.AddNewJob(newSubmitJobResponseBody.JobId)
 
-	go process.ProcessJob(newSubmitJobResponseBody.JobId, *newJobPayload, s.db)
+	go process.ProcessJob(newSubmitJobResponseBody.JobId, *newJobPayload, s.db, s.l)
 
 	utils.WriteJson(w, http.StatusCreated, newSubmitJobResponseBody)
 }
