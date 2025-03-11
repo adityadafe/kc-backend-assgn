@@ -11,6 +11,10 @@ type JobPayload struct {
 	Visits []StoreVisit `json:"visits"`
 }
 
+type SubmitJobFailedResponseBody struct {
+	Error string `json:"error"`
+}
+
 type SubmitJobResponseBody struct {
 	JobId string `json:"job_id"`
 }

@@ -1,0 +1,170 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for job submission and status checking",
+        "title": "Job API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:9090",
+    "basePath": "/api/",
+    "paths": {
+        "/status": {
+            "get": {
+                "description": "Retrieve current status of a job",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get job status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Job ID (example: job-123)",
+                        "name": "jobid",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetJobResponseBodyForCompletedOrOngoing"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.GetJobResponseBodyFailed"
+                        }
+                    }
+                }
+            }
+        },
+        "/submit": {
+            "post": {
+                "description": "Add a new job to processing queue",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Submit job for image processing",
+                "parameters": [
+                    {
+                        "description": "Job details",
+                        "name": "job",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.JobPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubmitJobResponseBody"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.SubmitJobFailedResponseBody"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.FailedJobError": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "store_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetJobResponseBodyFailed": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.FailedJobError"
+                    }
+                },
+                "job_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.GetJobResponseBodyForCompletedOrOngoing": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.JobPayload": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "visits": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StoreVisit"
+                    }
+                }
+            }
+        },
+        "models.StoreVisit": {
+            "type": "object",
+            "properties": {
+                "image_url": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "store_id": {
+                    "type": "string"
+                },
+                "visit_time": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SubmitJobFailedResponseBody": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SubmitJobResponseBody": {
+            "type": "object",
+            "properties": {
+                "job_id": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

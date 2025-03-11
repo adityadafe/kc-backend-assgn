@@ -1,0 +1,110 @@
+basePath: /api/
+definitions:
+  models.FailedJobError:
+    properties:
+      error:
+        type: string
+      store_id:
+        type: string
+    type: object
+  models.GetJobResponseBodyFailed:
+    properties:
+      error:
+        items:
+          $ref: '#/definitions/models.FailedJobError'
+        type: array
+      job_id:
+        type: string
+      status:
+        type: string
+    type: object
+  models.GetJobResponseBodyForCompletedOrOngoing:
+    properties:
+      job_id:
+        type: string
+      status:
+        type: string
+    type: object
+  models.JobPayload:
+    properties:
+      count:
+        type: integer
+      visits:
+        items:
+          $ref: '#/definitions/models.StoreVisit'
+        type: array
+    type: object
+  models.StoreVisit:
+    properties:
+      image_url:
+        items:
+          type: string
+        type: array
+      store_id:
+        type: string
+      visit_time:
+        type: string
+    type: object
+  models.SubmitJobFailedResponseBody:
+    properties:
+      error:
+        type: string
+    type: object
+  models.SubmitJobResponseBody:
+    properties:
+      job_id:
+        type: string
+    type: object
+host: localhost:9090
+info:
+  contact: {}
+  description: API for job submission and status checking
+  title: Job API
+  version: "1.0"
+paths:
+  /status:
+    get:
+      description: Retrieve current status of a job
+      parameters:
+      - description: 'Job ID (example: job-123)'
+        in: query
+        name: jobid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.GetJobResponseBodyForCompletedOrOngoing'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.GetJobResponseBodyFailed'
+      summary: Get job status
+  /submit:
+    post:
+      consumes:
+      - application/json
+      description: Add a new job to processing queue
+      parameters:
+      - description: Job details
+        in: body
+        name: job
+        required: true
+        schema:
+          $ref: '#/definitions/models.JobPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SubmitJobResponseBody'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.SubmitJobFailedResponseBody'
+      summary: Submit job for image processing
+swagger: "2.0"

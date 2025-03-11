@@ -21,6 +21,18 @@ func NewSubmitJobHandler(l *log.Logger, db storage.Storage) *SubmitJobHandler {
 	return &SubmitJobHandler{l, db}
 }
 
+// Handler for "/submit"
+// SubmitJobHandler godoc
+//
+// @Summary Submit job for image processing
+// @Description Add a new job to processing queue
+// @Accept   json
+// @Produce  json
+// @Param   job body models.JobPayload true "Job details"
+//
+// @Success 201 {object} models.SubmitJobResponseBody
+// @Failure 400 {object} models.SubmitJobFailedResponseBody
+// @Router /submit [post]
 func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.l.Println("Recvd a job")
 	newJobPayload := new(models.JobPayload)
@@ -29,19 +41,19 @@ func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		s.l.Println("failed to decode")
-		utils.WriteJson(w, http.StatusInternalServerError, `{error:"Interal Server error"}`)
+		utils.WriteJson(w, http.StatusInternalServerError, models.SubmitJobFailedResponseBody{Error: "Internal server Error"})
 		return
 	}
 
 	if newJobPayload.Count != len(newJobPayload.Visits) {
 		s.l.Println("count != len(visits)")
-		utils.WriteJson(w, http.StatusBadRequest, `{error:"Bad request"}`)
+		utils.WriteJson(w, http.StatusBadRequest, models.SubmitJobFailedResponseBody{Error: "Bad Request"})
 		return
 	}
 
 	for _, eachJob := range newJobPayload.Visits {
 		if len(eachJob.ImageUrls) < 1 || eachJob.StoreId == "" || eachJob.VisitTime == "" {
-			utils.WriteJson(w, http.StatusBadRequest, `{error:"Bad request"}`)
+			utils.WriteJson(w, http.StatusBadRequest, models.SubmitJobFailedResponseBody{Error: "Bad Request"})
 			return
 		}
 	}

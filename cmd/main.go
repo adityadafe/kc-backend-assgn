@@ -14,6 +14,11 @@ import (
 
 var bindAddress = ":9090"
 
+// @title Job API
+// @version 1.0
+// @description API for job submission and status checking
+// @host localhost:9090
+// @BasePath /api/
 func main() {
 
 	//for now just print logs in fd 1

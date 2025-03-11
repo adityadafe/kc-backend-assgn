@@ -18,6 +18,17 @@ func NewGetJobInfoHandler(l *log.Logger, db storage.Storage) *GetJobInfoHandler 
 	return &GetJobInfoHandler{l, db}
 }
 
+// Handler for "/status"
+// GetJobHandler godoc
+//
+// @Summary Get job status
+// @Description Retrieve current status of a job
+// @Produce  json
+// @Param   jobid query string true "Job ID (example: job-123)"
+//
+// @Success 200 {object} models.GetJobResponseBodyForCompletedOrOngoing
+// @Failure 400 {object} models.GetJobResponseBodyFailed
+// @Router /status [get]
 func (g *GetJobInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	jobID := r.URL.Query().Get("jobid")
