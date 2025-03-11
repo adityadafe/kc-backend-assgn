@@ -52,7 +52,7 @@ func processImage(storeID, imageURL, visitTime string, results chan<- models.Res
 	bounds := img.Bounds()
 	width := bounds.Dx()
 	height := bounds.Dy()
-	perimeter := 2 * (width + height)
+	perimeter := getPerimeter(height, width)
 
 	sleepDuration := time.Duration(rand.Float64()*(0.4-0.1)+0.1) * time.Second
 	time.Sleep(sleepDuration)
@@ -101,4 +101,8 @@ func ProcessJob(jobId string, job models.JobPayload, db storage.Storage, log *lo
 		}
 		db.UpdateJob(jobId, res.StoreID, utils.JobCompleted, "")
 	}
+}
+
+func getPerimeter(height, width int) int {
+	return 2 * (width + height)
 }
