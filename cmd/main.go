@@ -37,7 +37,7 @@ func main() {
 	}
 
 	go func() {
-		logger.Println("starting server in another routine")
+		logger.Println("Starting server in another routine")
 		err := server.ListenAndServe()
 		if err != nil {
 			logger.Fatal(err)

@@ -21,7 +21,7 @@ func NewGetJobInfoHandler(l *log.Logger, db storage.Storage) *GetJobInfoHandler 
 func (g *GetJobInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	jobID := r.URL.Query().Get("jobid")
-	g.l.Println("received get request for job id:", jobID)
+	g.l.Println("Request for job id:", jobID)
 
 	jobInfo, err := g.db.GetJobStatus(jobID)
 	if err != nil {
