@@ -21,29 +21,32 @@ func NewGetJobInfoHandler(l *log.Logger, db storage.Storage) *GetJobInfoHandler 
 func (g *GetJobInfoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	jobID := r.URL.Query().Get("jobid")
-	g.l.Println("recvd get job id:", jobID)
+	g.l.Println("received get request for job id:", jobID)
 
-	jobStatus, err := g.db.GetJobStatus(jobID)
-
-	//TODO: make these into functions
+	jobInfo, err := g.db.GetJobStatus(jobID)
 	if err != nil {
-		jobFailed := new(models.GetJobResponseBodyFailed)
-		jobFailed.JobId = jobID
-		jobFailed.Status = storage.JobFailed
-		jobFailed.Error.Error = "store_does_not_exist"
-		utils.WriteJson(w, http.StatusBadRequest, jobFailed)
+		utils.WriteJson(w, http.StatusBadRequest, `{}`)
 		return
 	}
 
-	if jobStatus == storage.JobFailed {
-		jobFailed := new(models.GetJobResponseBodyFailed)
-		jobFailed.JobId = jobID
-		jobFailed.Status = storage.JobFailed
-		utils.WriteJson(w, http.StatusBadRequest, jobFailed)
+	if jobInfo.Status == utils.JobFailed {
+		failedErrors := make([]models.FailedJobError, 0, len(jobInfo.Errors))
+		for _, e := range jobInfo.Errors {
+			failedErrors = append(failedErrors, models.FailedJobError{
+				StoreId: e.StoreID,
+			})
+		}
+
+		utils.WriteJson(w, http.StatusOK, models.GetJobResponseBodyFailed{
+			Status: jobInfo.Status,
+			JobId:  jobID,
+			Error:  failedErrors,
+		})
 		return
 	}
 
-	jobOngoingOrCompleted := new(models.GetJobResponseBodyForCompletedOrOngoing)
-	jobOngoingOrCompleted.JobId = jobID
-	utils.WriteJson(w, http.StatusOK, jobOngoingOrCompleted)
+	utils.WriteJson(w, http.StatusOK, models.GetJobResponseBodyForCompletedOrOngoing{
+		Status: jobInfo.Status,
+		JobId:  jobID,
+	})
 }

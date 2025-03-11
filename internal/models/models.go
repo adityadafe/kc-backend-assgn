@@ -15,9 +15,17 @@ type SubmitJobResponseBody struct {
 	JobId string `json:"job_id"`
 }
 
-type GetJobResponseBodyForCompletedOrOngoing struct {
-	Status string `json:"status"`
-	JobId  string `json:"job_id"`
+type Result struct {
+	StoreID   string `json:"store_id"`
+	ImageURL  string `json:"image_url"`
+	Perimeter int    `json:"perimeter"`
+	Error     string `json:"error"`
+}
+
+type GetJobResponseBodyFailed struct {
+	Status string           `json:"status"`
+	JobId  string           `json:"job_id"`
+	Error  []FailedJobError `json:"error"`
 }
 
 type FailedJobError struct {
@@ -25,8 +33,7 @@ type FailedJobError struct {
 	Error   string `json:"error"`
 }
 
-type GetJobResponseBodyFailed struct {
-	Status string         `json:"status"`
-	JobId  string         `json:"job_id"`
-	Error  FailedJobError `json:"error"`
+type GetJobResponseBodyForCompletedOrOngoing struct {
+	Status string `json:"status"`
+	JobId  string `json:"job_id"`
 }

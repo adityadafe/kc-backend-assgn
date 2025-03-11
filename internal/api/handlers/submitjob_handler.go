@@ -34,6 +34,7 @@ func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//TODO: do sanitaion Condition: If fields are missing OR count != len(visits)
 	if newJobPayload.Count != len(newJobPayload.Visits) {
 		s.l.Println("count != len(visits)")
 		utils.WriteJson(w, http.StatusBadRequest, `{error:"Bad request"}`)
@@ -43,7 +44,9 @@ func (s *SubmitJobHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	newSubmitJobResponseBody := new(models.SubmitJobResponseBody)
 	newSubmitJobResponseBody.JobId = uuid.NewString()
 
-	go process.ProcessJob(newSubmitJobResponseBody.JobId, *newJobPayload)
+	s.db.AddNewJob(newSubmitJobResponseBody.JobId)
+
+	go process.ProcessJob(newSubmitJobResponseBody.JobId, *newJobPayload, s.db)
 
 	utils.WriteJson(w, http.StatusCreated, newSubmitJobResponseBody)
 }
